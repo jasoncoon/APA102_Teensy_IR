@@ -29,7 +29,5 @@ unsigned int Lightning2014()
         delay(50 + random8(100));               // shorter delay between strokes  
     }
 
-    delay(random8(FREQUENCY) * 100);          // delay between strikes
-
-    return 0;
+    return random8(FREQUENCY) * 100;          // delay between strikes
 }

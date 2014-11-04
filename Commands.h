@@ -41,6 +41,22 @@ enum class InputCommand {
     Power,
     BrightnessUp,
     BrightnessDown,
+    Red,
+    Green,
+    Blue,
+    White,
+    RedUp,
+    GreenUp,
+    BlueUp,
+    RedDown,
+    GreenDown,
+    BlueDown,
+    Pattern1,
+    Pattern2,
+    Pattern3,
+    Pattern4,
+    Pattern5,
+    Pattern6,
 };
 
 // IR Raw Key Codes for SparkFun remote
@@ -79,6 +95,29 @@ enum class InputCommand {
 #define IRCODE_ADAFRUIT_8           0x00FD9867 // 16619623
 #define IRCODE_ADAFRUIT_9           0x00FD58A7 // 16603303
 
+// IR Raw Key Codes for eTopxizu 44Key IR Remote Controller for 5050 3528 RGB LED Light Strip
+#define IRCODE_ETOPXIZU_HELD            0x7FFFFFFF // 4294967295
+#define IRCODE_ETOPXIZU_POWER           16712445
+#define IRCODE_ETOPXIZU_PLAY_PAUSE      16745085
+#define IRCODE_ETOPXIZU_BRIGHTNESS_UP   16726725
+#define IRCODE_ETOPXIZU_BRIGHTNESS_DOWN 16759365
+#define IRCODE_ETOPXIZU_RED             16718565
+#define IRCODE_ETOPXIZU_GREEN           16751205
+#define IRCODE_ETOPXIZU_BLUE            16753245
+#define IRCODE_ETOPXIZU_WHITE           16720605
+#define IRCODE_ETOPXIZU_RED_UP          16722135
+#define IRCODE_ETOPXIZU_GREEN_UP        16754775
+#define IRCODE_ETOPXIZU_BLUE_UP         16738455
+#define IRCODE_ETOPXIZU_RED_DOWN        16713975
+#define IRCODE_ETOPXIZU_GREEN_DOWN      16746615
+#define IRCODE_ETOPXIZU_BLUE_DOWN       16730295
+#define IRCODE_ETOPXIZU_DIY1            16724175
+#define IRCODE_ETOPXIZU_DIY2            16756815
+#define IRCODE_ETOPXIZU_DIY3            16740495
+#define IRCODE_ETOPXIZU_DIY4            16716015
+#define IRCODE_ETOPXIZU_DIY5            16748655
+#define IRCODE_ETOPXIZU_DIY6            16732335
+
 // Low level IR code reading function
 // Function will return 0 if no IR code available
 unsigned long decodeIRCode() {
@@ -91,8 +130,8 @@ unsigned long decodeIRCode() {
     if (irReceiver.decode(&results)) {
         delay(20);
 
-        //if(results.value != 0)
-        //    Serial.println(results.value);
+        if (results.value != 0)
+            Serial.println(results.value);
 
         // Prepare to receive the next IR code
         irReceiver.resume();
@@ -238,6 +277,7 @@ InputCommand getCommand(unsigned long input) {
         case IRCODE_SPARKFUN_A:
         case IRCODE_ADAFRUIT_STOP_MODE:
         case IRCODE_ADAFRUIT_1:
+        case IRCODE_ETOPXIZU_PLAY_PAUSE:
             return InputCommand::PlayMode;
 
         case IRCODE_SPARKFUN_B:
@@ -245,13 +285,64 @@ InputCommand getCommand(unsigned long input) {
             return InputCommand::Palette;
 
         case IRCODE_ADAFRUIT_PLAY_PAUSE:
+        case IRCODE_ETOPXIZU_POWER:
             return InputCommand::Power;
 
         case IRCODE_ADAFRUIT_VOLUME_UP:
+        case IRCODE_ETOPXIZU_BRIGHTNESS_UP:
             return InputCommand::BrightnessUp;
 
         case IRCODE_ADAFRUIT_VOLUME_DOWN:
+        case IRCODE_ETOPXIZU_BRIGHTNESS_DOWN:
             return InputCommand::BrightnessDown;
+
+        case IRCODE_ETOPXIZU_RED:
+            return InputCommand::Red;
+
+        case IRCODE_ETOPXIZU_GREEN:
+            return InputCommand::Green;
+
+        case IRCODE_ETOPXIZU_BLUE:
+            return InputCommand::Blue;
+
+        case IRCODE_ETOPXIZU_WHITE:
+            return InputCommand::White;
+
+        case IRCODE_ETOPXIZU_RED_UP:
+            return InputCommand::RedUp;
+
+        case IRCODE_ETOPXIZU_GREEN_UP:
+            return InputCommand::GreenUp;
+
+        case IRCODE_ETOPXIZU_BLUE_UP:
+            return InputCommand::BlueUp;
+
+        case IRCODE_ETOPXIZU_RED_DOWN:
+            return InputCommand::RedDown;
+
+        case IRCODE_ETOPXIZU_GREEN_DOWN:
+            return InputCommand::GreenDown;
+
+        case IRCODE_ETOPXIZU_BLUE_DOWN:
+            return InputCommand::BlueDown;
+
+        case IRCODE_ETOPXIZU_DIY1:
+            return InputCommand::Pattern1;
+
+        case IRCODE_ETOPXIZU_DIY2:
+            return InputCommand::Pattern2;
+
+        case IRCODE_ETOPXIZU_DIY3:
+            return InputCommand::Pattern3;
+
+        case IRCODE_ETOPXIZU_DIY4:
+            return InputCommand::Pattern4;
+
+        case IRCODE_ETOPXIZU_DIY5:
+            return InputCommand::Pattern5;
+
+        case IRCODE_ETOPXIZU_DIY6:
+            return InputCommand::Pattern6;
     }
 
     return InputCommand::None;

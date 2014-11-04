@@ -8,10 +8,14 @@
 #define CHIPSET     APA102
 #define NUM_LEDS    72
 
-#define BRIGHTNESS  255
+const uint8_t brightnessCount = 5;
+uint8_t brightnessMap[brightnessCount] = { 16, 32, 64, 128, 255 };
+uint8_t brightness = brightnessMap[0];
 
 CRGB leds[NUM_LEDS];
 IRrecv irReceiver(IR_RECV_PIN);
+
+CRGB solidColor = CRGB::Red;
 
 #include "Commands.h"
 
@@ -27,8 +31,9 @@ bool autoplayEnabled = false;
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
 
-static const int PATTERN_COUNT = 5;
+static const int PATTERN_COUNT = 6;
 PatternFunctionPointer patterns[PATTERN_COUNT] = {
+    SolidColor,
     HueCycle,
     Fire2012WithPalette,
     QuadWave,
@@ -71,7 +76,7 @@ void setup()
     Serial.println("ready...");
 
     FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
-    FastLED.setBrightness(BRIGHTNESS);
+    FastLED.setBrightness(brightness);
 
     // Initialize the IR receiver
     irReceiver.enableIRIn();
@@ -86,14 +91,11 @@ void setup()
 
 void loop()
 {
-    unsigned int fps = currentPattern();
-
-    if (fps < 1)
-        fps = 1000;
+    unsigned int requestedDelay = currentPattern();
 
     FastLED.show(); // display this frame
 
-    handleInput(fps);
+    handleInput(requestedDelay);
 
     if (autoplayEnabled && millis() > autoPlayTimout) {
         move(1);
@@ -104,7 +106,12 @@ void loop()
 void powerOff()
 {
     // clear the display
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    // fill_solid(leds, NUM_LEDS, CRGB::Black);
+    for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CRGB::Black;
+        FastLED.show(); // display this frame
+        delay(1);
+    }
 
     FastLED.show(); // display this frame
 
@@ -115,12 +122,17 @@ void powerOff()
             return;
 
         // go idle for a while, converve power
-        delay(500);
+        delay(250);
     }
 }
 
 void move(int delta) {
-    currentIndex += delta;
+    moveTo(currentIndex + delta);
+}
+
+void moveTo(int index) {
+    currentIndex = index;
+
     if (currentIndex >= PATTERN_COUNT)
         currentIndex = 0;
     else if (currentIndex < 0)
@@ -129,8 +141,40 @@ void move(int delta) {
     currentPattern = patterns[currentIndex];
 }
 
-void handleInput(unsigned int fps) {
-    unsigned int requestedDelay = 1000 / fps;
+int getBrightnessLevel() {
+    int level = 0;
+    for (int i = 0; i < brightnessCount; i++) {
+        if (brightnessMap[i] >= brightness) {
+            level = i;
+            break;
+        }
+    }
+    return level;
+}
+
+uint8_t cycleBrightness() {
+    adjustBrightness(1);
+
+    if (brightness == brightnessMap[0])
+        return 0;
+
+    return brightness;
+}
+
+void adjustBrightness(int delta) {
+    int level = getBrightnessLevel();
+
+    level += delta;
+    if (level < 0)
+        level = brightnessCount - 1;
+    if (level >= brightnessCount)
+        level = 0;
+
+    brightness = brightnessMap[level];
+    FastLED.setBrightness(brightness);
+}
+
+void handleInput(unsigned int requestedDelay) {
     unsigned int requestedDelayTimeout = millis() + requestedDelay;
 
     while (true) {
@@ -156,7 +200,7 @@ void handleInput(unsigned int fps) {
         }
         else if (command == InputCommand::Brightness) {
             bool wasHolding = isHolding;
-            if (isHolding) { // || cycleBrightness() == 0) {
+            if (isHolding || cycleBrightness() == 0) {
                 heldButtonHasBeenHandled();
                 powerOff();
             }
@@ -164,18 +208,76 @@ void handleInput(unsigned int fps) {
         else if (command == InputCommand::Power) {
             powerOff();
         }
-        //else if (command == InputCommand::BrightnessUp) {
-        //    adjustBrightness(1);
-        //}
-        //else if (command == InputCommand::BrightnessDown) {
-        //    adjustBrightness(-1);
-        //}
+        else if (command == InputCommand::BrightnessUp) {
+            adjustBrightness(1);
+        }
+        else if (command == InputCommand::BrightnessDown) {
+            adjustBrightness(-1);
+        }
         else if (command == InputCommand::PlayMode) { // toggle pause/play
             autoplayEnabled = !autoplayEnabled;
         }
         //else if (command == InputCommand::Palette) { // cycle color pallete
         //    effects.CyclePalette();
         //}
+        else if (command == InputCommand::Red) {
+            solidColor = CRGB::Red;
+            moveTo(0);
+        }
+        else if (command == InputCommand::Green) {
+            solidColor = CRGB::Green;
+            moveTo(0);
+        }
+        else if (command == InputCommand::Blue) {
+            solidColor = CRGB::Blue;
+            moveTo(0);
+        }
+        else if (command == InputCommand::White) {
+            solidColor = CRGB::White;
+            moveTo(0);
+        }
+        else if (command == InputCommand::RedUp) {
+            solidColor.red += 1;
+            moveTo(0);
+        }
+        else if (command == InputCommand::GreenUp) {
+            solidColor.green += 1;
+            moveTo(0);
+        }
+        else if (command == InputCommand::BlueUp) {
+            solidColor.blue += 1;
+            moveTo(0);
+        }
+        else if (command == InputCommand::RedDown) {
+            solidColor.red -= 1;
+            moveTo(0);
+        }
+        else if (command == InputCommand::GreenDown) {
+            solidColor.green -= 1;
+            moveTo(0);
+        }
+        else if (command == InputCommand::BlueDown) {
+            solidColor.blue -= 1;
+            moveTo(0);
+        }
+        else if (command == InputCommand::Pattern1) {
+            moveTo(0);
+        }
+        else if (command == InputCommand::Pattern2) {
+            moveTo(1);
+        }
+        else if (command == InputCommand::Pattern3) {
+            moveTo(2);
+        }
+        else if (command == InputCommand::Pattern4) {
+            moveTo(3);
+        }
+        else if (command == InputCommand::Pattern5) {
+            moveTo(4);
+        }
+        else if (command == InputCommand::Pattern6) {
+            moveTo(5);
+        }
 
         if (millis() >= requestedDelayTimeout)
             break;
@@ -195,15 +297,15 @@ unsigned int QuadWave() {
     leds[quadwave8(count) / 4] = CHSV(0, 255, 255);
     DimAll(200);
     count++;
-    return 1;
+    return 0;
 }
 
 unsigned int SolidColor() {
     for (int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CRGB::Blue;
+        leds[i] = solidColor;
     }
 
-    return 1;
+    return 60;
 }
 
 CHSV color = CHSV(0, 255, 255);
@@ -215,7 +317,7 @@ unsigned int HueCycle() {
 
     color.hue++;
 
-    return 30;
+    return 60;
 }
 
 // Fire2012 by Mark Kriegsman, July 2012
