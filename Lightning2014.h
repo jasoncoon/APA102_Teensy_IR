@@ -29,5 +29,7 @@ unsigned int Lightning2014()
         delay(50 + random8(100));               // shorter delay between strokes  
     }
 
+    fill_solid(leds, NUM_LEDS - 1, CRGB::Black);
+
     return random8(FREQUENCY) * 100;          // delay between strikes
 }

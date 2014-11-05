@@ -193,20 +193,24 @@ void handleInput(unsigned int requestedDelay) {
         if (command == InputCommand::Up ||
             command == InputCommand::Right) {
             move(1);
+            break;
         }
         else if (command == InputCommand::Down ||
             command == InputCommand::Left) {
             move(-1);
+            break;
         }
         else if (command == InputCommand::Brightness) {
             bool wasHolding = isHolding;
             if (isHolding || cycleBrightness() == 0) {
                 heldButtonHasBeenHandled();
                 powerOff();
+                break;
             }
         }
         else if (command == InputCommand::Power) {
             powerOff();
+            break;
         }
         else if (command == InputCommand::BrightnessUp) {
             adjustBrightness(1);
@@ -223,60 +227,76 @@ void handleInput(unsigned int requestedDelay) {
         else if (command == InputCommand::Red) {
             solidColor = CRGB::Red;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::Green) {
             solidColor = CRGB::Green;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::Blue) {
             solidColor = CRGB::Blue;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::White) {
             solidColor = CRGB::White;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::RedUp) {
             solidColor.red += 1;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::GreenUp) {
             solidColor.green += 1;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::BlueUp) {
             solidColor.blue += 1;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::RedDown) {
             solidColor.red -= 1;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::GreenDown) {
             solidColor.green -= 1;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::BlueDown) {
             solidColor.blue -= 1;
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::Pattern1) {
             moveTo(0);
+            break;
         }
         else if (command == InputCommand::Pattern2) {
             moveTo(1);
+            break;
         }
         else if (command == InputCommand::Pattern3) {
             moveTo(2);
+            break;
         }
         else if (command == InputCommand::Pattern4) {
             moveTo(3);
+            break;
         }
         else if (command == InputCommand::Pattern5) {
             moveTo(4);
+            break;
         }
         else if (command == InputCommand::Pattern6) {
             moveTo(5);
+            break;
         }
 
         if (millis() >= requestedDelayTimeout)
@@ -297,7 +317,7 @@ unsigned int QuadWave() {
     leds[quadwave8(count) / 4] = CHSV(0, 255, 255);
     DimAll(200);
     count++;
-    return 0;
+    return 10;
 }
 
 unsigned int SolidColor() {
@@ -389,5 +409,5 @@ unsigned int Fire2012WithPalette()
         leds[j] = ColorFromPalette(gPal, colorindex);
     }
 
-    return 60;
+    return 30;
 }
