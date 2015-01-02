@@ -6,7 +6,7 @@
 #define IR_RECV_PIN 12
 #define COLOR_ORDER GRB
 #define CHIPSET     APA102
-#define NUM_LEDS    72
+#define NUM_LEDS    63
 
 const uint8_t brightnessCount = 5;
 uint8_t brightnessMap[brightnessCount] = { 16, 32, 64, 128, 255 };
@@ -21,8 +21,11 @@ CRGB solidColor = CRGB::Red;
 
 typedef unsigned int(*PatternFunctionPointer)(void);
 
+CRGBPalette16 gPalette;
+
 #include "BouncingBalls2014.h"
 #include "Lightning2014.h"
+#include "ColorTwinkles.h"
 
 int autoPlayDurationSeconds = 10;
 unsigned int autoPlayTimout = 0;
@@ -31,14 +34,15 @@ bool autoplayEnabled = false;
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
 
-static const int PATTERN_COUNT = 6;
+static const int PATTERN_COUNT = 7;
 PatternFunctionPointer patterns[PATTERN_COUNT] = {
-    SolidColor,
+    ColorTwinkles,
     HueCycle,
     Fire2012WithPalette,
     QuadWave,
     BouncingBalls2014,
     Lightning2014,
+    SolidColor,
 };
 
 // Fire2012 with programmable Color Palette
@@ -68,11 +72,9 @@ PatternFunctionPointer patterns[PATTERN_COUNT] = {
 // The dynamic palette shows how you can change the basic 'hue' of the
 // color palette every time through the loop, producing "rainbow fire".
 
-CRGBPalette16 gPal;
-
 void setup()
 {
-    delay(3000); // sanity delay
+    //delay(3000); // sanity delay
     Serial.println("ready...");
 
     FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
@@ -82,7 +84,7 @@ void setup()
     irReceiver.enableIRIn();
     irReceiver.blink13(true);
 
-    gPal = HeatColors_p;
+    gPalette = HeatColors_p;
 
     currentPattern = patterns[0];
 
@@ -226,52 +228,52 @@ void handleInput(unsigned int requestedDelay) {
         //}
         else if (command == InputCommand::Red) {
             solidColor = CRGB::Red;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::Green) {
             solidColor = CRGB::Green;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::Blue) {
             solidColor = CRGB::Blue;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::White) {
             solidColor = CRGB::White;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::RedUp) {
             solidColor.red += 1;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::GreenUp) {
             solidColor.green += 1;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::BlueUp) {
             solidColor.blue += 1;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::RedDown) {
             solidColor.red -= 1;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::GreenDown) {
             solidColor.green -= 1;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::BlueDown) {
             solidColor.blue -= 1;
-            moveTo(0);
+            moveTo(6);
             break;
         }
         else if (command == InputCommand::Pattern1) {
@@ -380,6 +382,8 @@ unsigned int HueCycle() {
 
 unsigned int Fire2012WithPalette()
 {
+    gPalette = HeatColors_p;
+
     fill_solid(leds, NUM_LEDS, CRGB::Black);
 
     // Array of temperature readings at each simulation cell
@@ -406,7 +410,7 @@ unsigned int Fire2012WithPalette()
         // Scale the heat value from 0-255 down to 0-240
         // for best results with color palettes.
         byte colorindex = scale8(heat[j], 240);
-        leds[j] = ColorFromPalette(gPal, colorindex);
+        leds[j] = ColorFromPalette(gPalette, colorindex);
     }
 
     return 30;

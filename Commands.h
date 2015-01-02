@@ -118,6 +118,10 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_DIY5            16748655
 #define IRCODE_ETOPXIZU_DIY6            16732335
 
+bool sparkfunRemoteEnabled = false;
+bool adafruitRemoteEnabled = false;
+bool etopxizuRemoteEnabled = true;
+
 // Low level IR code reading function
 // Function will return 0 if no IR code available
 unsigned long decodeIRCode() {
@@ -250,99 +254,131 @@ unsigned long waitForIRCode() {
 }
 
 InputCommand getCommand(unsigned long input) {
-    switch (input) {
-        case IRCODE_ADAFRUIT_UP:
-        case IRCODE_SPARKFUN_UP:
-            return InputCommand::Up;
+    if (adafruitRemoteEnabled) {
+        switch (input) {
+            case IRCODE_ADAFRUIT_UP:
+                return InputCommand::Up;
 
-        case IRCODE_ADAFRUIT_DOWN:
-        case IRCODE_SPARKFUN_DOWN:
-            return InputCommand::Down;
+            case IRCODE_ADAFRUIT_DOWN:
+                return InputCommand::Down;
 
-        case IRCODE_SPARKFUN_LEFT:
-        case IRCODE_ADAFRUIT_LEFT:
-            return InputCommand::Left;
+            case IRCODE_ADAFRUIT_LEFT:
+                return InputCommand::Left;
 
-        case IRCODE_SPARKFUN_RIGHT:
-        case IRCODE_ADAFRUIT_RIGHT:
-            return InputCommand::Right;
+            case IRCODE_ADAFRUIT_RIGHT:
+                return InputCommand::Right;
 
-        case IRCODE_SPARKFUN_SELECT:
-        case IRCODE_ADAFRUIT_ENTER_SAVE:
-            return InputCommand::Select;
+            case IRCODE_ADAFRUIT_ENTER_SAVE:
+                return InputCommand::Select;
 
-        case IRCODE_SPARKFUN_POWER:
-            return InputCommand::Brightness;
+            case IRCODE_ADAFRUIT_STOP_MODE:
+            case IRCODE_ADAFRUIT_1:
+                return InputCommand::PlayMode;
 
-        case IRCODE_SPARKFUN_A:
-        case IRCODE_ADAFRUIT_STOP_MODE:
-        case IRCODE_ADAFRUIT_1:
-        case IRCODE_ETOPXIZU_PLAY_PAUSE:
-            return InputCommand::PlayMode;
+            case IRCODE_ADAFRUIT_2:
+                return InputCommand::Palette;
 
-        case IRCODE_SPARKFUN_B:
-        case IRCODE_ADAFRUIT_2:
-            return InputCommand::Palette;
+            case IRCODE_ADAFRUIT_PLAY_PAUSE:
+                return InputCommand::Power;
 
-        case IRCODE_ADAFRUIT_PLAY_PAUSE:
-        case IRCODE_ETOPXIZU_POWER:
-            return InputCommand::Power;
+            case IRCODE_ADAFRUIT_VOLUME_UP:
+                return InputCommand::BrightnessUp;
 
-        case IRCODE_ADAFRUIT_VOLUME_UP:
-        case IRCODE_ETOPXIZU_BRIGHTNESS_UP:
-            return InputCommand::BrightnessUp;
+            case IRCODE_ADAFRUIT_VOLUME_DOWN:
+                return InputCommand::BrightnessDown;
+        }
+    }
 
-        case IRCODE_ADAFRUIT_VOLUME_DOWN:
-        case IRCODE_ETOPXIZU_BRIGHTNESS_DOWN:
-            return InputCommand::BrightnessDown;
+    if (sparkfunRemoteEnabled) {
+        switch (input) {
+            case IRCODE_SPARKFUN_UP:
+                return InputCommand::Up;
 
-        case IRCODE_ETOPXIZU_RED:
-            return InputCommand::Red;
+            case IRCODE_SPARKFUN_DOWN:
+                return InputCommand::Down;
 
-        case IRCODE_ETOPXIZU_GREEN:
-            return InputCommand::Green;
+            case IRCODE_SPARKFUN_LEFT:
+                return InputCommand::Left;
 
-        case IRCODE_ETOPXIZU_BLUE:
-            return InputCommand::Blue;
+            case IRCODE_SPARKFUN_RIGHT:
+                return InputCommand::Right;
 
-        case IRCODE_ETOPXIZU_WHITE:
-            return InputCommand::White;
+            case IRCODE_SPARKFUN_SELECT:
+                return InputCommand::Select;
 
-        case IRCODE_ETOPXIZU_RED_UP:
-            return InputCommand::RedUp;
+            case IRCODE_SPARKFUN_POWER:
+                return InputCommand::Brightness;
 
-        case IRCODE_ETOPXIZU_GREEN_UP:
-            return InputCommand::GreenUp;
+            case IRCODE_SPARKFUN_A:
+                return InputCommand::PlayMode;
 
-        case IRCODE_ETOPXIZU_BLUE_UP:
-            return InputCommand::BlueUp;
+            case IRCODE_SPARKFUN_B:
+                return InputCommand::Palette;
+        }
+    }
 
-        case IRCODE_ETOPXIZU_RED_DOWN:
-            return InputCommand::RedDown;
+    if (etopxizuRemoteEnabled) {
+        switch (input) {
+            case IRCODE_ETOPXIZU_PLAY_PAUSE:
+                return InputCommand::PlayMode;
 
-        case IRCODE_ETOPXIZU_GREEN_DOWN:
-            return InputCommand::GreenDown;
+            case IRCODE_ETOPXIZU_POWER:
+                return InputCommand::Power;
 
-        case IRCODE_ETOPXIZU_BLUE_DOWN:
-            return InputCommand::BlueDown;
+            case IRCODE_ETOPXIZU_BRIGHTNESS_UP:
+                return InputCommand::BrightnessUp;
 
-        case IRCODE_ETOPXIZU_DIY1:
-            return InputCommand::Pattern1;
+            case IRCODE_ETOPXIZU_BRIGHTNESS_DOWN:
+                return InputCommand::BrightnessDown;
 
-        case IRCODE_ETOPXIZU_DIY2:
-            return InputCommand::Pattern2;
+            case IRCODE_ETOPXIZU_RED:
+                return InputCommand::Red;
 
-        case IRCODE_ETOPXIZU_DIY3:
-            return InputCommand::Pattern3;
+            case IRCODE_ETOPXIZU_GREEN:
+                return InputCommand::Green;
 
-        case IRCODE_ETOPXIZU_DIY4:
-            return InputCommand::Pattern4;
+            case IRCODE_ETOPXIZU_BLUE:
+                return InputCommand::Blue;
 
-        case IRCODE_ETOPXIZU_DIY5:
-            return InputCommand::Pattern5;
+            case IRCODE_ETOPXIZU_WHITE:
+                return InputCommand::White;
 
-        case IRCODE_ETOPXIZU_DIY6:
-            return InputCommand::Pattern6;
+            case IRCODE_ETOPXIZU_RED_UP:
+                return InputCommand::RedUp;
+
+            case IRCODE_ETOPXIZU_GREEN_UP:
+                return InputCommand::GreenUp;
+
+            case IRCODE_ETOPXIZU_BLUE_UP:
+                return InputCommand::BlueUp;
+
+            case IRCODE_ETOPXIZU_RED_DOWN:
+                return InputCommand::RedDown;
+
+            case IRCODE_ETOPXIZU_GREEN_DOWN:
+                return InputCommand::GreenDown;
+
+            case IRCODE_ETOPXIZU_BLUE_DOWN:
+                return InputCommand::BlueDown;
+
+            case IRCODE_ETOPXIZU_DIY1:
+                return InputCommand::Pattern1;
+
+            case IRCODE_ETOPXIZU_DIY2:
+                return InputCommand::Pattern2;
+
+            case IRCODE_ETOPXIZU_DIY3:
+                return InputCommand::Pattern3;
+
+            case IRCODE_ETOPXIZU_DIY4:
+                return InputCommand::Pattern4;
+
+            case IRCODE_ETOPXIZU_DIY5:
+                return InputCommand::Pattern5;
+
+            case IRCODE_ETOPXIZU_DIY6:
+                return InputCommand::Pattern6;
+        }
     }
 
     return InputCommand::None;
