@@ -1,3 +1,5 @@
+// Color Twinkles by Mark Kriegsman: https://gist.github.com/kriegsman/5408ecd397744ba0393e
+//
 //  Twinkling 'holiday' lights that fade up and down in brightness.
 //  Colors are chosen from a palette; a few palettes are provided.
 //
