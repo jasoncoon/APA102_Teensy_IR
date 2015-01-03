@@ -226,26 +226,111 @@ void handleInput(unsigned int requestedDelay) {
         //else if (command == InputCommand::Palette) { // cycle color pallete
         //    effects.CyclePalette();
         //}
+        
         else if (command == InputCommand::Red) {
             solidColor = CRGB::Red;
             moveTo(6);
             break;
         }
+        else if (command == InputCommand::RedOrange) {
+            solidColor = CRGB::OrangeRed;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Orange) {
+            solidColor = CRGB::Orange;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::YellowOrange) {
+            solidColor = CRGB::Goldenrod;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Yellow) {
+            solidColor = CRGB::Yellow;
+            moveTo(6);
+            break;
+        }
+
         else if (command == InputCommand::Green) {
             solidColor = CRGB::Green;
             moveTo(6);
             break;
         }
+        else if (command == InputCommand::Lime) {
+            solidColor = CRGB::Lime;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Aqua) {
+            solidColor = CRGB::Aqua;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Teal) {
+            solidColor = CRGB::Teal;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Navy) {
+            solidColor = CRGB::Navy;
+            moveTo(6);
+            break;
+        }
+
         else if (command == InputCommand::Blue) {
             solidColor = CRGB::Blue;
             moveTo(6);
             break;
         }
+        else if (command == InputCommand::RoyalBlue) {
+            solidColor = CRGB::RoyalBlue;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Purple) {
+            solidColor = CRGB::Purple;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Indigo) {
+            solidColor = CRGB::Indigo;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Magenta) {
+            solidColor = CRGB::Magenta;
+            moveTo(6);
+            break;
+        }
+
         else if (command == InputCommand::White) {
             solidColor = CRGB::White;
             moveTo(6);
             break;
         }
+        else if (command == InputCommand::Pink) {
+            solidColor = CRGB::Pink;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::LightPink) {
+            solidColor = CRGB::LightPink;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::BabyBlue) {
+            solidColor = CRGB::CornflowerBlue;
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::LightBlue) {
+            solidColor = CRGB::LightBlue;
+            moveTo(6);
+            break;
+        }
+
         else if (command == InputCommand::RedUp) {
             solidColor.red += 1;
             moveTo(6);

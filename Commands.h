@@ -41,10 +41,31 @@ enum class InputCommand {
     Power,
     BrightnessUp,
     BrightnessDown,
+    
     Red,
+    RedOrange,
+    Orange,
+    YellowOrange,
+    Yellow,
+
     Green,
+    Lime,
+    Aqua,
+    Teal,
+    Navy,
+
     Blue,
+    RoyalBlue,
+    Purple,
+    Indigo,
+    Magenta,
+
     White,
+    Pink,
+    LightPink,
+    BabyBlue,
+    LightBlue,
+
     RedUp,
     GreenUp,
     BlueUp,
@@ -101,10 +122,31 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_PLAY_PAUSE      16745085
 #define IRCODE_ETOPXIZU_BRIGHTNESS_UP   16726725
 #define IRCODE_ETOPXIZU_BRIGHTNESS_DOWN 16759365
+
 #define IRCODE_ETOPXIZU_RED             16718565
+#define IRCODE_ETOPXIZU_RED_ORANGE      16722645
+#define IRCODE_ETOPXIZU_ORANGE          16714485
+#define IRCODE_ETOPXIZU_YELLOW_ORANGE   16726215
+#define IRCODE_ETOPXIZU_YELLOW          16718055
+
 #define IRCODE_ETOPXIZU_GREEN           16751205
+#define IRCODE_ETOPXIZU_LIME            16755285
+#define IRCODE_ETOPXIZU_AQUA            16747125
+#define IRCODE_ETOPXIZU_TEAL            16758855
+#define IRCODE_ETOPXIZU_NAVY            16750695
+
 #define IRCODE_ETOPXIZU_BLUE            16753245
+#define IRCODE_ETOPXIZU_ROYAL_BLUE      16749165
+#define IRCODE_ETOPXIZU_PURPLE          16757325
+#define IRCODE_ETOPXIZU_INDIGO          16742535
+#define IRCODE_ETOPXIZU_MAGENTA         16734375
+
 #define IRCODE_ETOPXIZU_WHITE           16720605
+#define IRCODE_ETOPXIZU_PINK            16716525
+#define IRCODE_ETOPXIZU_LIGHT_PINK      16724685
+#define IRCODE_ETOPXIZU_BABY_BLUE       16775175
+#define IRCODE_ETOPXIZU_LIGHT_BLUE      16767015
+
 #define IRCODE_ETOPXIZU_RED_UP          16722135
 #define IRCODE_ETOPXIZU_GREEN_UP        16754775
 #define IRCODE_ETOPXIZU_BLUE_UP         16738455
@@ -333,15 +375,47 @@ InputCommand getCommand(unsigned long input) {
 
             case IRCODE_ETOPXIZU_RED:
                 return InputCommand::Red;
+            case IRCODE_ETOPXIZU_RED_ORANGE:
+                return InputCommand::RedOrange;
+            case IRCODE_ETOPXIZU_ORANGE:
+                return InputCommand::Orange;
+            case IRCODE_ETOPXIZU_YELLOW_ORANGE:
+                return InputCommand::YellowOrange;
+            case IRCODE_ETOPXIZU_YELLOW:
+                return InputCommand::Yellow;
 
             case IRCODE_ETOPXIZU_GREEN:
                 return InputCommand::Green;
+            case IRCODE_ETOPXIZU_LIME:
+                return InputCommand::Lime;
+            case IRCODE_ETOPXIZU_AQUA:
+                return InputCommand::Aqua;
+            case IRCODE_ETOPXIZU_TEAL:
+                return InputCommand::Teal;
+            case IRCODE_ETOPXIZU_NAVY:
+                return InputCommand::Navy;
 
             case IRCODE_ETOPXIZU_BLUE:
                 return InputCommand::Blue;
+            case IRCODE_ETOPXIZU_ROYAL_BLUE:
+                return InputCommand::RoyalBlue;
+            case IRCODE_ETOPXIZU_PURPLE:
+                return InputCommand::Purple;
+            case IRCODE_ETOPXIZU_INDIGO:
+                return InputCommand::Indigo;
+            case IRCODE_ETOPXIZU_MAGENTA:
+                return InputCommand::Magenta;
 
             case IRCODE_ETOPXIZU_WHITE:
                 return InputCommand::White;
+            case IRCODE_ETOPXIZU_PINK:
+                return InputCommand::Pink;
+            case IRCODE_ETOPXIZU_LIGHT_PINK:
+                return InputCommand::LightPink;
+            case IRCODE_ETOPXIZU_BABY_BLUE:
+                return InputCommand::BabyBlue;
+            case IRCODE_ETOPXIZU_LIGHT_BLUE:
+                return InputCommand::LightBlue;
 
             case IRCODE_ETOPXIZU_RED_UP:
                 return InputCommand::RedUp;
