@@ -1,3 +1,8 @@
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+
 #include <FastLED.h>
 #include <IRremote.h>
 
@@ -7,6 +12,10 @@
 #define COLOR_ORDER GRB
 #define CHIPSET     APA102
 #define NUM_LEDS    63
+
+AudioInputAnalog         input(A2);
+AudioAnalyzeFFT256       fft;
+AudioConnection          audioConnection(input, 0, fft, 0);
 
 const uint8_t brightnessCount = 5;
 uint8_t brightnessMap[brightnessCount] = { 16, 32, 64, 128, 255 };
@@ -26,6 +35,7 @@ CRGBPalette16 gPalette;
 #include "BouncingBalls2014.h"
 #include "Lightning2014.h"
 #include "ColorTwinkles.h"
+#include "Spectrum.h"
 
 int autoPlayDurationSeconds = 10;
 unsigned int autoPlayTimout = 0;
@@ -34,7 +44,7 @@ bool autoplayEnabled = false;
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
 
-static const int PATTERN_COUNT = 7;
+static const int PATTERN_COUNT = 9;
 PatternFunctionPointer patterns[PATTERN_COUNT] = {
     ColorTwinkles,
     HueCycle,
@@ -43,6 +53,8 @@ PatternFunctionPointer patterns[PATTERN_COUNT] = {
     BouncingBalls2014,
     Lightning2014,
     SolidColor,
+    SpectrumBar,
+    SpectrumDots,
 };
 
 // Fire2012 with programmable Color Palette
@@ -89,6 +101,9 @@ void setup()
     currentPattern = patterns[0];
 
     autoPlayTimout = millis() + (autoPlayDurationSeconds * 1000);
+
+    // Audio requires memory to work.
+    AudioMemory(12);
 }
 
 void loop()
@@ -383,6 +398,14 @@ void handleInput(unsigned int requestedDelay) {
         }
         else if (command == InputCommand::Pattern6) {
             moveTo(5);
+            break;
+        }
+        else if (command == InputCommand::SpectrumBar) {
+            moveTo(7);
+            break;
+        }
+        else if (command == InputCommand::SpectrumDots) {
+            moveTo(8);
             break;
         }
 

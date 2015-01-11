@@ -78,6 +78,8 @@ enum class InputCommand {
     Pattern4,
     Pattern5,
     Pattern6,
+    SpectrumBar,
+    SpectrumDots,
 };
 
 // IR Raw Key Codes for SparkFun remote
@@ -159,6 +161,8 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_DIY4            16716015
 #define IRCODE_ETOPXIZU_DIY5            16748655
 #define IRCODE_ETOPXIZU_DIY6            16732335
+#define IRCODE_ETOPXIZU_JUMP3           16720095
+#define IRCODE_ETOPXIZU_JUMP7           16752735
 
 bool sparkfunRemoteEnabled = false;
 bool adafruitRemoteEnabled = false;
@@ -452,6 +456,12 @@ InputCommand getCommand(unsigned long input) {
 
             case IRCODE_ETOPXIZU_DIY6:
                 return InputCommand::Pattern6;
+
+            case IRCODE_ETOPXIZU_JUMP3:
+                return InputCommand::SpectrumBar;
+
+            case IRCODE_ETOPXIZU_JUMP7:
+                return InputCommand::SpectrumDots;
         }
     }
 
