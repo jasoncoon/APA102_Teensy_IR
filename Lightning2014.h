@@ -14,7 +14,7 @@ unsigned int dimmer = 1;
 // is usually duller and has a longer delay until the next flash. Subsequent
 // flashes, the "strokes," are brighter and happen at shorter intervals.
 
-unsigned int Lightning2014()
+uint16_t lightning2014()
 {
     for (int flashCounter = 0; flashCounter < random8(3, FLASHES); flashCounter++)
     {

@@ -163,6 +163,8 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_DIY6            16732335
 #define IRCODE_ETOPXIZU_JUMP3           16720095
 #define IRCODE_ETOPXIZU_JUMP7           16752735
+#define IRCODE_ETOPXIZU_QUICK           16771095
+#define IRCODE_ETOPXIZU_SLOW            16762935
 
 bool sparkfunRemoteEnabled = false;
 bool adafruitRemoteEnabled = false;
@@ -212,7 +214,7 @@ unsigned long readIRCode() {
 unsigned long lastIrCode = 0;
 
 unsigned int holdStartTime = 0;
-unsigned int defaultHoldDelay = 250;
+unsigned int defaultHoldDelay = 500;
 bool isHolding = false;
 
 unsigned int zeroStartTime = 0;
@@ -365,6 +367,12 @@ InputCommand getCommand(unsigned long input) {
 
     if (etopxizuRemoteEnabled) {
         switch (input) {
+            case IRCODE_ETOPXIZU_QUICK:
+                return InputCommand::Up;
+
+            case IRCODE_ETOPXIZU_SLOW:
+                return InputCommand::Down;
+
             case IRCODE_ETOPXIZU_PLAY_PAUSE:
                 return InputCommand::PlayMode;
 

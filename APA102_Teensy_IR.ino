@@ -5,15 +5,20 @@
 
 #include <FastLED.h>
 #include <IRremote.h>
+#include <EEPROM.h>
 
-#define LED_PIN     2
-#define CLOCK_PIN   3
+#if FASTLED_VERSION < 3001000
+#error "Requires FastLED 3.1 or later; check github for latest code."
+#endif
+
+#define LED_PIN     3
+#define CLOCK_PIN   2
 #define IR_RECV_PIN 12
 #define COLOR_ORDER GRB
 #define CHIPSET     APA102
 #define NUM_LEDS    63
 
-AudioInputAnalog         input(A2);
+AudioInputAnalog         input(A8);
 AudioAnalyzeFFT256       fft;
 AudioConnection          audioConnection(input, 0, fft, 0);
 
@@ -28,14 +33,12 @@ CRGB solidColor = CRGB::Red;
 
 #include "Commands.h"
 
-typedef unsigned int(*PatternFunctionPointer)(void);
+typedef uint16_t(*PatternFunctionPointer)();
+typedef PatternFunctionPointer PatternList [];
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 CRGBPalette16 gPalette;
-
-#include "BouncingBalls2014.h"
-#include "Lightning2014.h"
-#include "ColorTwinkles.h"
-#include "Spectrum.h"
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 int autoPlayDurationSeconds = 10;
 unsigned int autoPlayTimout = 0;
@@ -44,52 +47,38 @@ bool autoplayEnabled = false;
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
 
-static const int PATTERN_COUNT = 9;
-PatternFunctionPointer patterns[PATTERN_COUNT] = {
-    ColorTwinkles,
-    HueCycle,
-    Fire2012WithPalette,
-    QuadWave,
-    BouncingBalls2014,
-    Lightning2014,
-    SolidColor,
-    SpectrumBar,
-    SpectrumDots,
+#include "Fire2012WithPalette.h"
+#include "BouncingBalls2014.h"
+#include "Lightning2014.h"
+#include "ColorTwinkles.h"
+#include "Spectrum.h"
+
+const PatternList patterns = {
+    colorTwinkles,
+    rainbow,
+    fire2012WithPalette,
+    sinelon,
+    bouncingBalls2014,
+    lightning2014,
+    showSolidColor,
+    spectrumBar,
+    spectrumDots,
+    juggle,
+    bpm,
+    confetti,
+    rainbowWithGlitter,
 };
 
-// Fire2012 with programmable Color Palette
-//
-// This code is the same fire simulation as the original "Fire2012",
-// but each heat cell's temperature is translated to color through a FastLED
-// programmable color palette, instead of through the "HeatColor(...)" function.
-//
-// Four different static color palettes are provided here, plus one dynamic one.
-// 
-// The three static ones are: 
-//   1. the FastLED built-in HeatColors_p -- this is the default, and it looks
-//      pretty much exactly like the original Fire2012.
-//
-//  To use any of the other palettes below, just "uncomment" the corresponding code.
-//
-//   2. a gradient from black to red to yellow to white, which is
-//      visually similar to the HeatColors_p, and helps to illustrate
-//      what the 'heat colors' palette is actually doing,
-//   3. a similar gradient, but in blue colors rather than red ones,
-//      i.e. from black to blue to aqua to white, which results in
-//      an "icy blue" fire effect,
-//   4. a simplified three-step gradient, from black to red to white, just to show
-//      that these gradients need not have four components; two or
-//      three are possible, too, even if they don't look quite as nice for fire.
-//
-// The dynamic palette shows how you can change the basic 'hue' of the
-// color palette every time through the loop, producing "rainbow fire".
+const int patternCount = ARRAY_SIZE(patterns);
 
 void setup()
 {
     //delay(3000); // sanity delay
     Serial.println("ready...");
 
-    FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
+    loadSettings();
+
+    FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(12)>(leds, NUM_LEDS);
     FastLED.setBrightness(brightness);
 
     // Initialize the IR receiver
@@ -98,7 +87,7 @@ void setup()
 
     gPalette = HeatColors_p;
 
-    currentPattern = patterns[0];
+    currentPattern = patterns[currentIndex];
 
     autoPlayTimout = millis() + (autoPlayDurationSeconds * 1000);
 
@@ -108,6 +97,9 @@ void setup()
 
 void loop()
 {
+    // Add entropy to random number generator; we use a lot of it.
+    random16_add_entropy(random());
+    
     unsigned int requestedDelay = currentPattern();
 
     FastLED.show(); // display this frame
@@ -118,6 +110,45 @@ void loop()
         move(1);
         autoPlayTimout = millis() + (autoPlayDurationSeconds * 1000);
     }
+
+    // do some periodic updates
+    EVERY_N_MILLISECONDS(20) { gHue++; } // slowly cycle the "base color" through the rainbow
+}
+
+void loadSettings() {
+    // load settings from EEPROM
+
+    // brightness
+    brightness = EEPROM.read(0);
+    if (brightness < 1)
+        brightness = 1;
+    else if (brightness > 255)
+        brightness = 255;
+
+    // currentIndex
+    currentIndex = EEPROM.read(1);
+    if (currentIndex < 0)
+        currentIndex = 0;
+    else if (currentIndex >= patternCount)
+        currentIndex = patternCount - 1;
+
+    // solidColor
+    solidColor.r = EEPROM.read(2);
+    solidColor.g = EEPROM.read(3);
+    solidColor.b = EEPROM.read(4);
+
+    if (solidColor.r == 0 && solidColor.g == 0 && solidColor.b == 0)
+        solidColor = CRGB::White;
+}
+
+void setSolidColor(CRGB color) {
+    solidColor = color;
+
+    EEPROM.write(2, solidColor.r);
+    EEPROM.write(3, solidColor.g);
+    EEPROM.write(4, solidColor.b);
+
+    moveTo(6);
 }
 
 void powerOff()
@@ -150,12 +181,14 @@ void move(int delta) {
 void moveTo(int index) {
     currentIndex = index;
 
-    if (currentIndex >= PATTERN_COUNT)
+    if (currentIndex >= patternCount)
         currentIndex = 0;
     else if (currentIndex < 0)
-        currentIndex = PATTERN_COUNT - 1;
+        currentIndex = patternCount - 1;
 
     currentPattern = patterns[currentIndex];
+
+    EEPROM.write(1, currentIndex);
 }
 
 int getBrightnessLevel() {
@@ -189,18 +222,15 @@ void adjustBrightness(int delta) {
 
     brightness = brightnessMap[level];
     FastLED.setBrightness(brightness);
+
+    EEPROM.write(0, brightness);
 }
 
 void handleInput(unsigned int requestedDelay) {
     unsigned int requestedDelayTimeout = millis() + requestedDelay;
 
     while (true) {
-        //unsigned long code = readIRCode();
-
-        //if (code != 0)
-        //    Serial.println(code);
-
-        InputCommand command = readCommand(defaultHoldDelay); // getCommand(code);
+        InputCommand command = readCommand(defaultHoldDelay);
 
         if (command != InputCommand::None) {
             Serial.print("command: ");
@@ -241,139 +271,120 @@ void handleInput(unsigned int requestedDelay) {
         //else if (command == InputCommand::Palette) { // cycle color pallete
         //    effects.CyclePalette();
         //}
-        
+
         else if (command == InputCommand::Red) {
-            solidColor = CRGB::Red;
-            moveTo(6);
+            setSolidColor(CRGB::Red);
             break;
         }
         else if (command == InputCommand::RedOrange) {
-            solidColor = CRGB::OrangeRed;
-            moveTo(6);
+            setSolidColor(CRGB::OrangeRed);
             break;
         }
         else if (command == InputCommand::Orange) {
-            solidColor = CRGB::Orange;
-            moveTo(6);
+            setSolidColor(CRGB::Orange);
             break;
         }
         else if (command == InputCommand::YellowOrange) {
-            solidColor = CRGB::Goldenrod;
-            moveTo(6);
+            setSolidColor(CRGB::Goldenrod);
             break;
         }
         else if (command == InputCommand::Yellow) {
-            solidColor = CRGB::Yellow;
-            moveTo(6);
+            setSolidColor(CRGB::Yellow);
             break;
         }
 
         else if (command == InputCommand::Green) {
-            solidColor = CRGB::Green;
-            moveTo(6);
+            setSolidColor(CRGB::Green);
             break;
         }
         else if (command == InputCommand::Lime) {
-            solidColor = CRGB::Lime;
-            moveTo(6);
+            setSolidColor(CRGB::Lime);
             break;
         }
         else if (command == InputCommand::Aqua) {
-            solidColor = CRGB::Aqua;
-            moveTo(6);
+            setSolidColor(CRGB::Aqua);
             break;
         }
         else if (command == InputCommand::Teal) {
-            solidColor = CRGB::Teal;
-            moveTo(6);
+            setSolidColor(CRGB::Teal);
             break;
         }
         else if (command == InputCommand::Navy) {
-            solidColor = CRGB::Navy;
-            moveTo(6);
+            setSolidColor(CRGB::Navy);
             break;
         }
 
         else if (command == InputCommand::Blue) {
-            solidColor = CRGB::Blue;
-            moveTo(6);
+            setSolidColor(CRGB::Blue);
             break;
         }
         else if (command == InputCommand::RoyalBlue) {
-            solidColor = CRGB::RoyalBlue;
-            moveTo(6);
+            setSolidColor(CRGB::RoyalBlue);
             break;
         }
         else if (command == InputCommand::Purple) {
-            solidColor = CRGB::Purple;
-            moveTo(6);
+            setSolidColor(CRGB::Purple);
             break;
         }
         else if (command == InputCommand::Indigo) {
-            solidColor = CRGB::Indigo;
-            moveTo(6);
+            setSolidColor(CRGB::Indigo);
             break;
         }
         else if (command == InputCommand::Magenta) {
-            solidColor = CRGB::Magenta;
-            moveTo(6);
+            setSolidColor(CRGB::Magenta);
             break;
         }
 
         else if (command == InputCommand::White) {
-            solidColor = CRGB::White;
-            moveTo(6);
+            setSolidColor(CRGB::White);
             break;
         }
         else if (command == InputCommand::Pink) {
-            solidColor = CRGB::Pink;
-            moveTo(6);
+            setSolidColor(CRGB::Pink);
             break;
         }
         else if (command == InputCommand::LightPink) {
-            solidColor = CRGB::LightPink;
-            moveTo(6);
+            setSolidColor(CRGB::LightPink);
             break;
         }
         else if (command == InputCommand::BabyBlue) {
-            solidColor = CRGB::CornflowerBlue;
-            moveTo(6);
+            setSolidColor(CRGB::CornflowerBlue);
             break;
         }
         else if (command == InputCommand::LightBlue) {
-            solidColor = CRGB::LightBlue;
-            moveTo(6);
+            setSolidColor(CRGB::LightBlue);
             break;
         }
 
         else if (command == InputCommand::RedUp) {
             solidColor.red += 1;
-            moveTo(6);
+            setSolidColor(solidColor);
             break;
         }
         else if (command == InputCommand::GreenUp) {
             solidColor.green += 1;
-            moveTo(6);
+            setSolidColor(solidColor);
+
             break;
         }
         else if (command == InputCommand::BlueUp) {
             solidColor.blue += 1;
-            moveTo(6);
+            setSolidColor(solidColor);
             break;
         }
         else if (command == InputCommand::RedDown) {
             solidColor.red -= 1;
-            moveTo(6);
+            setSolidColor(solidColor);
             break;
         }
         else if (command == InputCommand::GreenDown) {
             solidColor.green -= 1;
-            moveTo(6);
+            setSolidColor(solidColor);
             break;
         }
         else if (command == InputCommand::BlueDown) {
             solidColor.blue -= 1;
-            moveTo(6);
+            setSolidColor(solidColor);
             break;
         }
         else if (command == InputCommand::Pattern1) {
@@ -415,111 +426,98 @@ void handleInput(unsigned int requestedDelay) {
 }
 
 // scale the brightness of the screenbuffer down
-void DimAll(byte value)
+void dimAll(byte value)
 {
     for (int i = 0; i < NUM_LEDS; i++){
         leds[i].nscale8(value);
     }
 }
 
-byte count = 0;
-unsigned int QuadWave() {
-    leds[quadwave8(count) / 4] = CHSV(0, 255, 255);
-    DimAll(200);
-    count++;
-    return 10;
-}
-
-unsigned int SolidColor() {
-    for (int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = solidColor;
-    }
+uint16_t showSolidColor() {
+    fill_solid(leds, NUM_LEDS, solidColor);
 
     return 60;
 }
 
-CHSV color = CHSV(0, 255, 255);
-
-unsigned int HueCycle() {
-    for (int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = color;
-    }
-
-    color.hue++;
-
-    return 60;
-}
-
-// Fire2012 by Mark Kriegsman, July 2012
-// as part of "Five Elements" shown here: http://youtu.be/knWiGsmgycY
-//// 
-// This basic one-dimensional 'fire' simulation works roughly as follows:
-// There's a underlying array of 'heat' cells, that model the temperature
-// at each point along the line.  Every cycle through the simulation, 
-// four steps are performed:
-//  1) All cells cool down a little bit, losing heat to the air
-//  2) The heat from each cell drifts 'up' and diffuses a little
-//  3) Sometimes randomly new 'sparks' of heat are added at the bottom
-//  4) The heat from each cell is rendered as a color into the leds array
-//     The heat-to-color mapping uses a black-body radiation approximation.
-//
-// Temperature is in arbitrary units from 0 (cold black) to 255 (white hot).
-//
-// This simulation scales it self a bit depending on NUM_LEDS; it should look
-// "OK" on anywhere from 20 to 100 LEDs without too much tweaking. 
-//
-// I recommend running this simulation at anywhere from 30-100 frames per second,
-// meaning an interframe delay of about 10-35 milliseconds.
-//
-// Looks best on a high-density LED setup (60+ pixels/meter).
-//
-//
-// There are two main parameters you can play with to control the look and
-// feel of your fire: COOLING (used in step 1 above), and SPARKING (used
-// in step 3 above).
-//
-// COOLING: How much does the air cool as it rises?
-// Less cooling = taller flames.  More cooling = shorter flames.
-// Default 55, suggested range 20-100 
-#define COOLING  55
-
-// SPARKING: What chance (out of 255) is there that a new spark will be lit?
-// Higher chance = more roaring fire.  Lower chance = more flickery fire.
-// Default 120, suggested range 50-200.
-#define SPARKING 120
-
-unsigned int Fire2012WithPalette()
+uint16_t rainbow()
 {
-    gPalette = HeatColors_p;
+    // FastLED's built-in rainbow generator
+    fill_rainbow(leds, NUM_LEDS, gHue, 7);
 
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    return 8;
+}
 
-    // Array of temperature readings at each simulation cell
-    static byte heat[NUM_LEDS];
+uint16_t rainbowWithGlitter()
+{
+    // built-in FastLED rainbow, plus some random sparkly glitter
+    rainbow();
+    addGlitter(80);
+    return 8;
+}
 
-    // Step 1.  Cool down every cell a little
-    for (int i = 0; i < NUM_LEDS; i++) {
-        heat[i] = qsub8(heat[i], random8(0, ((COOLING * 10) / NUM_LEDS) + 2));
+void addGlitter(fract8 chanceOfGlitter)
+{
+    if (random8() < chanceOfGlitter) {
+        leds[random16(NUM_LEDS)] += CRGB::White;
     }
+}
 
-    // Step 2.  Heat from each cell drifts 'up' and diffuses a little
-    for (int k = NUM_LEDS - 1; k >= 2; k--) {
-        heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+uint16_t confetti()
+{
+    // random colored speckles that blink in and fade smoothly
+    fadeToBlackBy(leds, NUM_LEDS, 10);
+    int pos = random16(NUM_LEDS);
+    leds[pos] += CHSV(gHue + random8(64), 200, 255);
+    return 8;
+}
+
+uint16_t bpm()
+{
+    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+    uint8_t BeatsPerMinute = 62;
+    CRGBPalette16 palette = PartyColors_p;
+    uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
+    for (int i = 0; i < NUM_LEDS; i++) { //9948
+        leds[i] = ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10));
     }
+    return 8;
+}
 
-    // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
-    if (random8() < SPARKING) {
-        int y = random8(7);
-        heat[y] = qadd8(heat[y], random8(160, 255));
+uint16_t juggle() {
+    // eight colored dots, weaving in and out of sync with each other
+    fadeToBlackBy(leds, NUM_LEDS, 20);
+    byte dothue = 0;
+    for (int i = 0; i < 8; i++) {
+        leds[beatsin16(i + 7, 0, NUM_LEDS)] |= CHSV(dothue, 200, 255);
+        dothue += 32;
     }
+    return 8;
+}
 
-    // Step 4.  Map from heat cells to LED colors
-    for (int j = 0; j < NUM_LEDS; j++) {
-        // Scale the heat value from 0-255 down to 0-240
-        // for best results with color palettes.
-        byte colorindex = scale8(heat[j], 240);
-        leds[j] = ColorFromPalette(gPalette, colorindex);
-    }
+// An animation to play while the crowd goes wild after the big performance
+uint16_t applause()
+{
+    static uint16_t lastPixel = 0;
+    fadeToBlackBy(leds, NUM_LEDS, 32);
+    leds[lastPixel] = CHSV(random8(HUE_BLUE, HUE_PURPLE), 255, 255);
+    lastPixel = random16(NUM_LEDS);
+    leds[lastPixel] = CRGB::White;
+    return 8;
+}
 
-    return 30;
+// An "animation" to just fade to black.  Useful as the last track
+// in a non-looping performance-oriented playlist.
+uint16_t fadeToBlack()
+{
+    fadeToBlackBy(leds, NUM_LEDS, 10);
+    return 8;
+}
+
+uint16_t sinelon()
+{
+    // a colored dot sweeping back and forth, with fading trails
+    fadeToBlackBy(leds, NUM_LEDS, 20);
+    int pos = beatsin16(13, 0, NUM_LEDS);
+    leds[pos] += CHSV(gHue, 255, 192);
+    return 8;
 }

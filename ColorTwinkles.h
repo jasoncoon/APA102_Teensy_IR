@@ -149,8 +149,9 @@ void brightenOrDarkenEachPixel(fract8 fadeUpAmount, fract8 fadeDownAmount)
     }
 }
 
-void colortwinkles()
-{
+uint16_t colorTwinkles() {
+    chooseColorPalette();
+    
     // Make each pixel brighter or darker, depending on
     // its 'direction' flag.
     brightenOrDarkenEachPixel(FADE_IN_SPEED, FADE_OUT_SPEED);
@@ -163,10 +164,6 @@ void colortwinkles()
             setPixelDirection(pos, GETTING_BRIGHTER);
         }
     }
-}
 
-unsigned int ColorTwinkles() {
-    chooseColorPalette();
-    colortwinkles();
     return 20;
 }

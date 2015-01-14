@@ -22,7 +22,7 @@ float COR[NUM_BALLS];                       // Coefficient of Restitution (bounc
 
 bool initialized = false;
 
-unsigned int BouncingBalls2014() {
+uint16_t bouncingBalls2014() {
     if (!initialized) {
         initialized = true;
 
@@ -36,7 +36,7 @@ unsigned int BouncingBalls2014() {
         }
     }
 
-    DimAll(120);
+    dimAll(120);
 
     for (int i = 0; i < NUM_BALLS; i++) {
         tCycle[i] = millis() - tLast[i];     // Calculate the time since the last time the ball was on the ground

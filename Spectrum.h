@@ -10,7 +10,7 @@ float level;
 
 int shown;
 
-unsigned int SpectrumBar() {
+uint16_t spectrumBar() {
     scale = 256.0;
 
     gPalette = RainbowColors_p;
@@ -44,7 +44,7 @@ unsigned int SpectrumBar() {
     return 0;
 }
 
-unsigned int SpectrumDots() {
+uint16_t spectrumDots() {
     scale = 2048;
 
     gPalette = RainbowColors_p;
