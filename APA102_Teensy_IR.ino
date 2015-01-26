@@ -14,9 +14,9 @@
 #define LED_PIN     3
 #define CLOCK_PIN   2
 #define IR_RECV_PIN 12
-#define COLOR_ORDER GRB
+#define COLOR_ORDER GBR
 #define CHIPSET     APA102
-#define NUM_LEDS    63
+#define NUM_LEDS    144
 
 AudioInputAnalog         input(A8);
 AudioAnalyzeFFT256       fft;
@@ -47,6 +47,7 @@ bool autoplayEnabled = false;
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
 
+#include "SoftTwinkles.h"
 #include "Fire2012WithPalette.h"
 #include "BouncingBalls2014.h"
 #include "Lightning2014.h"
@@ -54,19 +55,21 @@ PatternFunctionPointer currentPattern;
 #include "Spectrum.h"
 
 const PatternList patterns = {
+    softTwinkles,
     colorTwinkles,
-    rainbow,
     fire2012WithPalette,
     sinelon,
-    bouncingBalls2014,
     lightning2014,
-    showSolidColor,
+    bouncingBalls2014,
     spectrumBar,
     spectrumDots,
     juggle,
     bpm,
     confetti,
+    rainbow,
     rainbowWithGlitter,
+    hueCycle,
+    showSolidColor,
 };
 
 const int patternCount = ARRAY_SIZE(patterns);
@@ -78,7 +81,8 @@ void setup()
 
     loadSettings();
 
-    FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(12)>(leds, NUM_LEDS);
+    FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS);
+    FastLED.setCorrection(0xB0FFFF);
     FastLED.setBrightness(brightness);
 
     // Initialize the IR receiver
@@ -148,7 +152,7 @@ void setSolidColor(CRGB color) {
     EEPROM.write(3, solidColor.g);
     EEPROM.write(4, solidColor.b);
 
-    moveTo(6);
+    moveTo(patternCount - 1);
 }
 
 void powerOff()
@@ -187,6 +191,8 @@ void moveTo(int index) {
         currentIndex = patternCount - 1;
 
     currentPattern = patterns[currentIndex];
+
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
 
     EEPROM.write(1, currentIndex);
 }
@@ -272,6 +278,93 @@ void handleInput(unsigned int requestedDelay) {
         //    effects.CyclePalette();
         //}
 
+        // pattern buttons
+
+        else if (command == InputCommand::Pattern1) {
+            moveTo(0);
+            break;
+        }
+        else if (command == InputCommand::Pattern2) {
+            moveTo(1);
+            break;
+        }
+        else if (command == InputCommand::Pattern3) {
+            moveTo(2);
+            break;
+        }
+        else if (command == InputCommand::Pattern4) {
+            moveTo(3);
+            break;
+        }
+        else if (command == InputCommand::Pattern5) {
+            moveTo(4);
+            break;
+        }
+        else if (command == InputCommand::Pattern6) {
+            moveTo(5);
+            break;
+        }
+        else if (command == InputCommand::Pattern7) {
+            moveTo(6);
+            break;
+        }
+        else if (command == InputCommand::Pattern8) {
+            moveTo(7);
+            break;
+        }
+        else if (command == InputCommand::Pattern9) {
+            moveTo(8);
+            break;
+        }
+        else if (command == InputCommand::Pattern10) {
+            moveTo(9);
+            break;
+        }
+        else if (command == InputCommand::Pattern11) {
+            moveTo(10);
+            break;
+        }
+        else if (command == InputCommand::Pattern12) {
+            moveTo(11);
+            break;
+        }
+
+        // custom color adjustment buttons
+
+        else if (command == InputCommand::RedUp) {
+            solidColor.red += 1;
+            setSolidColor(solidColor);
+            break;
+        }
+        else if (command == InputCommand::RedDown) {
+            solidColor.red -= 1;
+            setSolidColor(solidColor);
+            break;
+        }
+        else if (command == InputCommand::GreenUp) {
+            solidColor.green += 1;
+            setSolidColor(solidColor);
+
+            break;
+        }
+        else if (command == InputCommand::GreenDown) {
+            solidColor.green -= 1;
+            setSolidColor(solidColor);
+            break;
+        }
+        else if (command == InputCommand::BlueUp) {
+            solidColor.blue += 1;
+            setSolidColor(solidColor);
+            break;
+        }
+        else if (command == InputCommand::BlueDown) {
+            solidColor.blue -= 1;
+            setSolidColor(solidColor);
+            break;
+        }
+
+        // color buttons
+
         else if (command == InputCommand::Red) {
             setSolidColor(CRGB::Red);
             break;
@@ -353,70 +446,6 @@ void handleInput(unsigned int requestedDelay) {
         }
         else if (command == InputCommand::LightBlue) {
             setSolidColor(CRGB::LightBlue);
-            break;
-        }
-
-        else if (command == InputCommand::RedUp) {
-            solidColor.red += 1;
-            setSolidColor(solidColor);
-            break;
-        }
-        else if (command == InputCommand::GreenUp) {
-            solidColor.green += 1;
-            setSolidColor(solidColor);
-
-            break;
-        }
-        else if (command == InputCommand::BlueUp) {
-            solidColor.blue += 1;
-            setSolidColor(solidColor);
-            break;
-        }
-        else if (command == InputCommand::RedDown) {
-            solidColor.red -= 1;
-            setSolidColor(solidColor);
-            break;
-        }
-        else if (command == InputCommand::GreenDown) {
-            solidColor.green -= 1;
-            setSolidColor(solidColor);
-            break;
-        }
-        else if (command == InputCommand::BlueDown) {
-            solidColor.blue -= 1;
-            setSolidColor(solidColor);
-            break;
-        }
-        else if (command == InputCommand::Pattern1) {
-            moveTo(0);
-            break;
-        }
-        else if (command == InputCommand::Pattern2) {
-            moveTo(1);
-            break;
-        }
-        else if (command == InputCommand::Pattern3) {
-            moveTo(2);
-            break;
-        }
-        else if (command == InputCommand::Pattern4) {
-            moveTo(3);
-            break;
-        }
-        else if (command == InputCommand::Pattern5) {
-            moveTo(4);
-            break;
-        }
-        else if (command == InputCommand::Pattern6) {
-            moveTo(5);
-            break;
-        }
-        else if (command == InputCommand::SpectrumBar) {
-            moveTo(7);
-            break;
-        }
-        else if (command == InputCommand::SpectrumDots) {
-            moveTo(8);
             break;
         }
 
@@ -520,4 +549,9 @@ uint16_t sinelon()
     int pos = beatsin16(13, 0, NUM_LEDS);
     leds[pos] += CHSV(gHue, 255, 192);
     return 8;
+}
+
+uint16_t hueCycle() {
+    fill_solid(leds, NUM_LEDS, CHSV(gHue, 255, 255));
+    return 60;
 }

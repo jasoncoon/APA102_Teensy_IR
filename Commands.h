@@ -41,7 +41,27 @@ enum class InputCommand {
     Power,
     BrightnessUp,
     BrightnessDown,
-    
+
+    Pattern1,
+    Pattern2,
+    Pattern3,
+    Pattern4,
+    Pattern5,
+    Pattern6,
+    Pattern7,
+    Pattern8,
+    Pattern9,
+    Pattern10,
+    Pattern11,
+    Pattern12,
+
+    RedUp,
+    RedDown,
+    GreenUp,
+    GreenDown,
+    BlueUp,
+    BlueDown,
+
     Red,
     RedOrange,
     Orange,
@@ -65,21 +85,6 @@ enum class InputCommand {
     LightPink,
     BabyBlue,
     LightBlue,
-
-    RedUp,
-    GreenUp,
-    BlueUp,
-    RedDown,
-    GreenDown,
-    BlueDown,
-    Pattern1,
-    Pattern2,
-    Pattern3,
-    Pattern4,
-    Pattern5,
-    Pattern6,
-    SpectrumBar,
-    SpectrumDots,
 };
 
 // IR Raw Key Codes for SparkFun remote
@@ -125,6 +130,32 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_BRIGHTNESS_UP   16726725
 #define IRCODE_ETOPXIZU_BRIGHTNESS_DOWN 16759365
 
+#define IRCODE_ETOPXIZU_DIY1            16724175
+#define IRCODE_ETOPXIZU_DIY2            16756815
+#define IRCODE_ETOPXIZU_DIY3            16740495
+#define IRCODE_ETOPXIZU_DIY4            16716015
+#define IRCODE_ETOPXIZU_DIY5            16748655
+#define IRCODE_ETOPXIZU_DIY6            16732335
+
+#define IRCODE_ETOPXIZU_JUMP3           16720095
+#define IRCODE_ETOPXIZU_JUMP7           16752735
+#define IRCODE_ETOPXIZU_FADE3           16736415
+#define IRCODE_ETOPXIZU_FADE7           16769055
+#define IRCODE_ETOPXIZU_FLASH           16764975
+#define IRCODE_ETOPXIZU_AUTO            16773135
+
+#define IRCODE_ETOPXIZU_QUICK           16771095
+#define IRCODE_ETOPXIZU_SLOW            16762935
+
+#define IRCODE_ETOPXIZU_RED_UP          16722135
+#define IRCODE_ETOPXIZU_RED_DOWN        16713975
+
+#define IRCODE_ETOPXIZU_GREEN_UP        16754775
+#define IRCODE_ETOPXIZU_GREEN_DOWN      16746615
+
+#define IRCODE_ETOPXIZU_BLUE_UP         16738455
+#define IRCODE_ETOPXIZU_BLUE_DOWN       16730295
+
 #define IRCODE_ETOPXIZU_RED             16718565
 #define IRCODE_ETOPXIZU_RED_ORANGE      16722645
 #define IRCODE_ETOPXIZU_ORANGE          16714485
@@ -149,25 +180,8 @@ enum class InputCommand {
 #define IRCODE_ETOPXIZU_BABY_BLUE       16775175
 #define IRCODE_ETOPXIZU_LIGHT_BLUE      16767015
 
-#define IRCODE_ETOPXIZU_RED_UP          16722135
-#define IRCODE_ETOPXIZU_GREEN_UP        16754775
-#define IRCODE_ETOPXIZU_BLUE_UP         16738455
-#define IRCODE_ETOPXIZU_RED_DOWN        16713975
-#define IRCODE_ETOPXIZU_GREEN_DOWN      16746615
-#define IRCODE_ETOPXIZU_BLUE_DOWN       16730295
-#define IRCODE_ETOPXIZU_DIY1            16724175
-#define IRCODE_ETOPXIZU_DIY2            16756815
-#define IRCODE_ETOPXIZU_DIY3            16740495
-#define IRCODE_ETOPXIZU_DIY4            16716015
-#define IRCODE_ETOPXIZU_DIY5            16748655
-#define IRCODE_ETOPXIZU_DIY6            16732335
-#define IRCODE_ETOPXIZU_JUMP3           16720095
-#define IRCODE_ETOPXIZU_JUMP7           16752735
-#define IRCODE_ETOPXIZU_QUICK           16771095
-#define IRCODE_ETOPXIZU_SLOW            16762935
-
 bool sparkfunRemoteEnabled = false;
-bool adafruitRemoteEnabled = false;
+bool adafruitRemoteEnabled = true;
 bool etopxizuRemoteEnabled = true;
 
 // Low level IR code reading function
@@ -381,9 +395,48 @@ InputCommand getCommand(unsigned long input) {
 
             case IRCODE_ETOPXIZU_BRIGHTNESS_UP:
                 return InputCommand::BrightnessUp;
-
             case IRCODE_ETOPXIZU_BRIGHTNESS_DOWN:
                 return InputCommand::BrightnessDown;
+
+            case IRCODE_ETOPXIZU_DIY1:
+                return InputCommand::Pattern1;
+            case IRCODE_ETOPXIZU_DIY2:
+                return InputCommand::Pattern2;
+            case IRCODE_ETOPXIZU_DIY3:
+                return InputCommand::Pattern3;
+            case IRCODE_ETOPXIZU_DIY4:
+                return InputCommand::Pattern4;
+            case IRCODE_ETOPXIZU_DIY5:
+                return InputCommand::Pattern5;
+            case IRCODE_ETOPXIZU_DIY6:
+                return InputCommand::Pattern6;
+            case IRCODE_ETOPXIZU_JUMP3:
+                return InputCommand::Pattern7;
+            case IRCODE_ETOPXIZU_JUMP7:
+                return InputCommand::Pattern8;
+            case IRCODE_ETOPXIZU_FADE3:
+                return InputCommand::Pattern9;
+            case IRCODE_ETOPXIZU_FADE7:
+                return InputCommand::Pattern10;
+            case IRCODE_ETOPXIZU_FLASH:
+                return InputCommand::Pattern11;
+            case IRCODE_ETOPXIZU_AUTO:
+                return InputCommand::Pattern12;
+
+            case IRCODE_ETOPXIZU_RED_UP:
+                return InputCommand::RedUp;
+            case IRCODE_ETOPXIZU_RED_DOWN:
+                return InputCommand::RedDown;
+
+            case IRCODE_ETOPXIZU_GREEN_UP:
+                return InputCommand::GreenUp;
+            case IRCODE_ETOPXIZU_GREEN_DOWN:
+                return InputCommand::GreenDown;
+
+            case IRCODE_ETOPXIZU_BLUE_UP:
+                return InputCommand::BlueUp;
+            case IRCODE_ETOPXIZU_BLUE_DOWN:
+                return InputCommand::BlueDown;
 
             case IRCODE_ETOPXIZU_RED:
                 return InputCommand::Red;
@@ -428,48 +481,6 @@ InputCommand getCommand(unsigned long input) {
                 return InputCommand::BabyBlue;
             case IRCODE_ETOPXIZU_LIGHT_BLUE:
                 return InputCommand::LightBlue;
-
-            case IRCODE_ETOPXIZU_RED_UP:
-                return InputCommand::RedUp;
-
-            case IRCODE_ETOPXIZU_GREEN_UP:
-                return InputCommand::GreenUp;
-
-            case IRCODE_ETOPXIZU_BLUE_UP:
-                return InputCommand::BlueUp;
-
-            case IRCODE_ETOPXIZU_RED_DOWN:
-                return InputCommand::RedDown;
-
-            case IRCODE_ETOPXIZU_GREEN_DOWN:
-                return InputCommand::GreenDown;
-
-            case IRCODE_ETOPXIZU_BLUE_DOWN:
-                return InputCommand::BlueDown;
-
-            case IRCODE_ETOPXIZU_DIY1:
-                return InputCommand::Pattern1;
-
-            case IRCODE_ETOPXIZU_DIY2:
-                return InputCommand::Pattern2;
-
-            case IRCODE_ETOPXIZU_DIY3:
-                return InputCommand::Pattern3;
-
-            case IRCODE_ETOPXIZU_DIY4:
-                return InputCommand::Pattern4;
-
-            case IRCODE_ETOPXIZU_DIY5:
-                return InputCommand::Pattern5;
-
-            case IRCODE_ETOPXIZU_DIY6:
-                return InputCommand::Pattern6;
-
-            case IRCODE_ETOPXIZU_JUMP3:
-                return InputCommand::SpectrumBar;
-
-            case IRCODE_ETOPXIZU_JUMP7:
-                return InputCommand::SpectrumDots;
         }
     }
 

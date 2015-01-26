@@ -10,6 +10,8 @@ float level;
 
 int shown;
 
+int huesPerPixel = 240 / NUM_LEDS;
+
 uint16_t spectrumBar() {
     scale = 256.0;
 
@@ -38,11 +40,13 @@ uint16_t spectrumBar() {
     }
 
     for (int i = 0; i < shown; i++) {
-        leds[i] = ColorFromPalette(gPalette, i * 4, 255, NOBLEND);
+        leds[i] = ColorFromPalette(gPalette, i * huesPerPixel, 255, NOBLEND);
     }
 
     return 0;
 }
+
+const int ledsPerBand = NUM_LEDS / bandCount;
 
 uint16_t spectrumDots() {
     scale = 2048;
@@ -70,15 +74,12 @@ uint16_t spectrumDots() {
 
     fill_solid(leds, NUM_LEDS, CRGB::Black);
 
-    for (int i = 0; i < bandCount; i++) {
-        int val = fftLevels[i] * scale;
-        
+    for (int i = 0; i < NUM_LEDS; i++) {
+        int val = fftLevels[i / ledsPerBand] * scale;
+
         if (val >= 256) val = 255;
 
-        leds[i * 4] = ColorFromPalette(gPalette, i * 16, val, NOBLEND);
-        leds[i * 4 + 1] = ColorFromPalette(gPalette, i * 16, val, NOBLEND);
-        leds[i * 4 + 2] = ColorFromPalette(gPalette, i * 16, val, NOBLEND);
-        leds[i * 4 + 3] = ColorFromPalette(gPalette, i * 16, val, NOBLEND);
+        leds[i] = ColorFromPalette(gPalette, i * 2, val, NOBLEND);
     }
 
     return 0;
