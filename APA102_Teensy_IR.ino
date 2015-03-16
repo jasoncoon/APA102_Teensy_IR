@@ -11,7 +11,7 @@
 #define IR_RECV_PIN 12
 #define COLOR_ORDER GBR
 #define CHIPSET     APA102
-#define NUM_LEDS    144
+#define NUM_LEDS    16
 
 const uint8_t brightnessCount = 5;
 uint8_t brightnessMap[brightnessCount] = { 16, 32, 64, 128, 255 };
@@ -31,9 +31,9 @@ typedef PatternFunctionPointer PatternList [];
 CRGBPalette16 gPalette;
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-int autoPlayDurationSeconds = 10;
+int autoPlayDurationSeconds = 5;
 unsigned int autoPlayTimout = 0;
-bool autoplayEnabled = false;
+bool autoplayEnabled = true;
 
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
@@ -60,7 +60,7 @@ const PatternList patterns = {
     showSolidColor,
 };
 
-const int patternCount = ARRAY_SIZE(patterns);
+const int patternCount = 13;
 
 void setup()
 {
