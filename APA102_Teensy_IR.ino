@@ -1,8 +1,3 @@
-#include <Audio.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-
 #include <FastLED.h>
 #include <IRremote.h>
 #include <EEPROM.h>
@@ -17,10 +12,6 @@
 #define COLOR_ORDER GBR
 #define CHIPSET     APA102
 #define NUM_LEDS    144
-
-AudioInputAnalog         input(A8);
-AudioAnalyzeFFT256       fft;
-AudioConnection          audioConnection(input, 0, fft, 0);
 
 const uint8_t brightnessCount = 5;
 uint8_t brightnessMap[brightnessCount] = { 16, 32, 64, 128, 255 };
@@ -52,7 +43,6 @@ PatternFunctionPointer currentPattern;
 #include "BouncingBalls2014.h"
 #include "Lightning2014.h"
 #include "ColorTwinkles.h"
-#include "Spectrum.h"
 
 const PatternList patterns = {
     softTwinkles,
@@ -61,8 +51,6 @@ const PatternList patterns = {
     sinelon,
     lightning2014,
     bouncingBalls2014,
-    spectrumBar,
-    spectrumDots,
     juggle,
     bpm,
     confetti,
@@ -94,9 +82,6 @@ void setup()
     currentPattern = patterns[currentIndex];
 
     autoPlayTimout = millis() + (autoPlayDurationSeconds * 1000);
-
-    // Audio requires memory to work.
-    AudioMemory(12);
 }
 
 void loop()
@@ -169,8 +154,8 @@ void powerOff()
 
     while (true) {
         InputCommand command = readCommand();
-        if (command == InputCommand::Power ||
-            command == InputCommand::Brightness)
+        if (command == Power ||
+            command == Brightness)
             return;
 
         // go idle for a while, converve power
@@ -238,22 +223,22 @@ void handleInput(unsigned int requestedDelay) {
     while (true) {
         InputCommand command = readCommand(defaultHoldDelay);
 
-        if (command != InputCommand::None) {
+        if (command != None) {
             Serial.print("command: ");
             Serial.println((int) command);
         }
 
-        if (command == InputCommand::Up ||
-            command == InputCommand::Right) {
+        if (command == Up ||
+            command == Right) {
             move(1);
             break;
         }
-        else if (command == InputCommand::Down ||
-            command == InputCommand::Left) {
+        else if (command == Down ||
+            command == Left) {
             move(-1);
             break;
         }
-        else if (command == InputCommand::Brightness) {
+        else if (command == Brightness) {
             bool wasHolding = isHolding;
             if (isHolding || cycleBrightness() == 0) {
                 heldButtonHasBeenHandled();
@@ -261,103 +246,103 @@ void handleInput(unsigned int requestedDelay) {
                 break;
             }
         }
-        else if (command == InputCommand::Power) {
+        else if (command == Power) {
             powerOff();
             break;
         }
-        else if (command == InputCommand::BrightnessUp) {
+        else if (command == BrightnessUp) {
             adjustBrightness(1);
         }
-        else if (command == InputCommand::BrightnessDown) {
+        else if (command == BrightnessDown) {
             adjustBrightness(-1);
         }
-        else if (command == InputCommand::PlayMode) { // toggle pause/play
+        else if (command == PlayMode) { // toggle pause/play
             autoplayEnabled = !autoplayEnabled;
         }
-        //else if (command == InputCommand::Palette) { // cycle color pallete
+        //else if (command == Palette) { // cycle color pallete
         //    effects.CyclePalette();
         //}
 
         // pattern buttons
 
-        else if (command == InputCommand::Pattern1) {
+        else if (command == Pattern1) {
             moveTo(0);
             break;
         }
-        else if (command == InputCommand::Pattern2) {
+        else if (command == Pattern2) {
             moveTo(1);
             break;
         }
-        else if (command == InputCommand::Pattern3) {
+        else if (command == Pattern3) {
             moveTo(2);
             break;
         }
-        else if (command == InputCommand::Pattern4) {
+        else if (command == Pattern4) {
             moveTo(3);
             break;
         }
-        else if (command == InputCommand::Pattern5) {
+        else if (command == Pattern5) {
             moveTo(4);
             break;
         }
-        else if (command == InputCommand::Pattern6) {
+        else if (command == Pattern6) {
             moveTo(5);
             break;
         }
-        else if (command == InputCommand::Pattern7) {
+        else if (command == Pattern7) {
             moveTo(6);
             break;
         }
-        else if (command == InputCommand::Pattern8) {
+        else if (command == Pattern8) {
             moveTo(7);
             break;
         }
-        else if (command == InputCommand::Pattern9) {
+        else if (command == Pattern9) {
             moveTo(8);
             break;
         }
-        else if (command == InputCommand::Pattern10) {
+        else if (command == Pattern10) {
             moveTo(9);
             break;
         }
-        else if (command == InputCommand::Pattern11) {
+        else if (command == Pattern11) {
             moveTo(10);
             break;
         }
-        else if (command == InputCommand::Pattern12) {
+        else if (command == Pattern12) {
             moveTo(11);
             break;
         }
 
         // custom color adjustment buttons
 
-        else if (command == InputCommand::RedUp) {
+        else if (command == RedUp) {
             solidColor.red += 1;
             setSolidColor(solidColor);
             break;
         }
-        else if (command == InputCommand::RedDown) {
+        else if (command == RedDown) {
             solidColor.red -= 1;
             setSolidColor(solidColor);
             break;
         }
-        else if (command == InputCommand::GreenUp) {
+        else if (command == GreenUp) {
             solidColor.green += 1;
             setSolidColor(solidColor);
 
             break;
         }
-        else if (command == InputCommand::GreenDown) {
+        else if (command == GreenDown) {
             solidColor.green -= 1;
             setSolidColor(solidColor);
             break;
         }
-        else if (command == InputCommand::BlueUp) {
+        else if (command == BlueUp) {
             solidColor.blue += 1;
             setSolidColor(solidColor);
             break;
         }
-        else if (command == InputCommand::BlueDown) {
+        else if (command == BlueDown) {
             solidColor.blue -= 1;
             setSolidColor(solidColor);
             break;
@@ -365,86 +350,86 @@ void handleInput(unsigned int requestedDelay) {
 
         // color buttons
 
-        else if (command == InputCommand::Red) {
+        else if (command == Red) {
             setSolidColor(CRGB::Red);
             break;
         }
-        else if (command == InputCommand::RedOrange) {
+        else if (command == RedOrange) {
             setSolidColor(CRGB::OrangeRed);
             break;
         }
-        else if (command == InputCommand::Orange) {
+        else if (command == Orange) {
             setSolidColor(CRGB::Orange);
             break;
         }
-        else if (command == InputCommand::YellowOrange) {
+        else if (command == YellowOrange) {
             setSolidColor(CRGB::Goldenrod);
             break;
         }
-        else if (command == InputCommand::Yellow) {
+        else if (command == Yellow) {
             setSolidColor(CRGB::Yellow);
             break;
         }
 
-        else if (command == InputCommand::Green) {
+        else if (command == Green) {
             setSolidColor(CRGB::Green);
             break;
         }
-        else if (command == InputCommand::Lime) {
+        else if (command == Lime) {
             setSolidColor(CRGB::Lime);
             break;
         }
-        else if (command == InputCommand::Aqua) {
+        else if (command == Aqua) {
             setSolidColor(CRGB::Aqua);
             break;
         }
-        else if (command == InputCommand::Teal) {
+        else if (command == Teal) {
             setSolidColor(CRGB::Teal);
             break;
         }
-        else if (command == InputCommand::Navy) {
+        else if (command == Navy) {
             setSolidColor(CRGB::Navy);
             break;
         }
 
-        else if (command == InputCommand::Blue) {
+        else if (command == Blue) {
             setSolidColor(CRGB::Blue);
             break;
         }
-        else if (command == InputCommand::RoyalBlue) {
+        else if (command == RoyalBlue) {
             setSolidColor(CRGB::RoyalBlue);
             break;
         }
-        else if (command == InputCommand::Purple) {
+        else if (command == Purple) {
             setSolidColor(CRGB::Purple);
             break;
         }
-        else if (command == InputCommand::Indigo) {
+        else if (command == Indigo) {
             setSolidColor(CRGB::Indigo);
             break;
         }
-        else if (command == InputCommand::Magenta) {
+        else if (command == Magenta) {
             setSolidColor(CRGB::Magenta);
             break;
         }
 
-        else if (command == InputCommand::White) {
+        else if (command == White) {
             setSolidColor(CRGB::White);
             break;
         }
-        else if (command == InputCommand::Pink) {
+        else if (command == Pink) {
             setSolidColor(CRGB::Pink);
             break;
         }
-        else if (command == InputCommand::LightPink) {
+        else if (command == LightPink) {
             setSolidColor(CRGB::LightPink);
             break;
         }
-        else if (command == InputCommand::BabyBlue) {
+        else if (command == BabyBlue) {
             setSolidColor(CRGB::CornflowerBlue);
             break;
         }
-        else if (command == InputCommand::LightBlue) {
+        else if (command == LightBlue) {
             setSolidColor(CRGB::LightBlue);
             break;
         }
