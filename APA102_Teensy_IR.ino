@@ -29,11 +29,11 @@ typedef PatternFunctionPointer PatternList [];
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 CRGBPalette16 gPalette;
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+byte gHue = 0; // rotating "base color" used by many of the patterns
 
-int autoPlayDurationSeconds = 5;
+int autoPlayDurationSeconds = 10;
 unsigned int autoPlayTimout = 0;
-bool autoplayEnabled = true;
+bool autoplayEnabled = false;
 
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
@@ -60,7 +60,7 @@ const PatternList patterns = {
     showSolidColor,
 };
 
-const int patternCount = 13;
+const int patternCount = ARRAY_SIZE(patterns);
 
 void setup()
 {
