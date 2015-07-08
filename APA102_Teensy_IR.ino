@@ -16,7 +16,7 @@
 #define IR_RECV_PIN 12
 #define COLOR_ORDER GBR
 #define CHIPSET     APA102
-#define NUM_LEDS    144
+#define NUM_LEDS    126
 
 AudioInputAnalog         input(A8);
 AudioAnalyzeFFT256       fft;
@@ -44,6 +44,8 @@ int autoPlayDurationSeconds = 10;
 unsigned int autoPlayTimout = 0;
 bool autoplayEnabled = false;
 
+InputCommand command;
+
 int currentIndex = 0;
 PatternFunctionPointer currentPattern;
 
@@ -53,8 +55,11 @@ PatternFunctionPointer currentPattern;
 #include "Lightning2014.h"
 #include "ColorTwinkles.h"
 #include "Spectrum.h"
+#include "ColorInvaders.h"
+#include "Simon.h"
 
 const PatternList patterns = {
+    pride,
     softTwinkles,
     colorTwinkles,
     fire2012WithPalette,
@@ -69,6 +74,8 @@ const PatternList patterns = {
     rainbow,
     rainbowWithGlitter,
     hueCycle,
+    simon,
+    colorInvaders,
     showSolidColor,
 };
 
@@ -76,8 +83,8 @@ const int patternCount = ARRAY_SIZE(patterns);
 
 void setup()
 {
-    //delay(3000); // sanity delay
-    Serial.println("ready...");
+    delay(500); // sanity delay
+    Serial.println("setup start");
 
     loadSettings();
 
@@ -94,9 +101,15 @@ void setup()
     currentPattern = patterns[currentIndex];
 
     autoPlayTimout = millis() + (autoPlayDurationSeconds * 1000);
-
+    
+    // Serial.print("reading... ");
+    // randomSeed(analogRead(A8));
+    // Serial.println("done");
+    
     // Audio requires memory to work.
     AudioMemory(12);
+    
+    Serial.println("setup end");
 }
 
 void loop()
@@ -236,25 +249,22 @@ void handleInput(unsigned int requestedDelay) {
     unsigned int requestedDelayTimeout = millis() + requestedDelay;
 
     while (true) {
-        InputCommand command = readCommand(defaultHoldDelay);
+        command = readCommand(defaultHoldDelay);
 
         if (command != InputCommand::None) {
             Serial.print("command: ");
             Serial.println((int) command);
         }
 
-        if (command == InputCommand::Up ||
-            command == InputCommand::Right) {
+        if (command == InputCommand::Up) {
             move(1);
             break;
         }
-        else if (command == InputCommand::Down ||
-            command == InputCommand::Left) {
+        else if (command == InputCommand::Down) {
             move(-1);
             break;
         }
         else if (command == InputCommand::Brightness) {
-            bool wasHolding = isHolding;
             if (isHolding || cycleBrightness() == 0) {
                 heldButtonHasBeenHandled();
                 powerOff();
@@ -365,7 +375,7 @@ void handleInput(unsigned int requestedDelay) {
 
         // color buttons
 
-        else if (command == InputCommand::Red) {
+        else if (command == InputCommand::Red && currentIndex != patternCount - 2 && currentIndex != patternCount - 3) { // Red, Green, and Blue buttons can be used by ColorInvaders game, which is the next to last pattern
             setSolidColor(CRGB::Red);
             break;
         }
@@ -386,7 +396,7 @@ void handleInput(unsigned int requestedDelay) {
             break;
         }
 
-        else if (command == InputCommand::Green) {
+        else if (command == InputCommand::Green && currentIndex != patternCount - 2 && currentIndex != patternCount - 3) { // Red, Green, and Blue buttons can be used by ColorInvaders game, which is the next to last pattern
             setSolidColor(CRGB::Green);
             break;
         }
@@ -407,7 +417,7 @@ void handleInput(unsigned int requestedDelay) {
             break;
         }
 
-        else if (command == InputCommand::Blue) {
+        else if (command == InputCommand::Blue && currentIndex != patternCount - 2 && currentIndex != patternCount - 3) { // Red, Green, and Blue buttons can be used by ColorInvaders game, which is the next to last pattern
             setSolidColor(CRGB::Blue);
             break;
         }
@@ -428,7 +438,7 @@ void handleInput(unsigned int requestedDelay) {
             break;
         }
 
-        else if (command == InputCommand::White) {
+        else if (command == InputCommand::White && currentIndex != patternCount - 2 && currentIndex != patternCount - 3) {
             setSolidColor(CRGB::White);
             break;
         }
@@ -554,4 +564,52 @@ uint16_t sinelon()
 uint16_t hueCycle() {
     fill_solid(leds, NUM_LEDS, CHSV(gHue, 255, 255));
     return 60;
+}
+
+// Pride2015 by Mark Kriegsman
+// https://gist.github.com/kriegsman/964de772d64c502760e5
+
+// This function draws rainbows with an ever-changing,
+// widely-varying set of parameters.
+uint16_t pride()
+{
+    static uint16_t sPseudotime = 0;
+    static uint16_t sLastMillis = 0;
+    static uint16_t sHue16 = 0;
+
+    uint8_t sat8 = beatsin88(87, 220, 250);
+    uint8_t brightdepth = beatsin88(341, 96, 224);
+    uint16_t brightnessthetainc16 = beatsin88(203, (25 * 256), (40 * 256));
+    uint8_t msmultiplier = beatsin88(147, 23, 60);
+
+    uint16_t hue16 = sHue16;//gHue * 256;
+    uint16_t hueinc16 = beatsin88(113, 1, 3000);
+
+    uint16_t ms = millis();
+    uint16_t deltams = ms - sLastMillis;
+    sLastMillis = ms;
+    sPseudotime += deltams * msmultiplier;
+    sHue16 += deltams * beatsin88(400, 5, 9);
+    uint16_t brightnesstheta16 = sPseudotime;
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+        hue16 += hueinc16;
+        uint8_t hue8 = hue16 / 256;
+
+        brightnesstheta16 += brightnessthetainc16;
+        uint16_t b16 = sin16(brightnesstheta16) + 32768;
+
+        uint16_t bri16 = (uint32_t) ((uint32_t) b16 * (uint32_t) b16) / 65536;
+        uint8_t bri8 = (uint32_t) (((uint32_t) bri16) * brightdepth) / 65536;
+        bri8 += (255 - brightdepth);
+
+        CRGB newcolor = CHSV(hue8, sat8, bri8);
+
+        uint8_t pixelnumber = i;
+        pixelnumber = (NUM_LEDS - 1) - pixelnumber;
+
+        nblend(leds[pixelnumber], newcolor, 64);
+    }
+
+    return 0;
 }

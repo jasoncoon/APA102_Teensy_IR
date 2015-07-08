@@ -1,6 +1,6 @@
 // SoftTwinkles by Mark Kriegsman: https://gist.github.com/kriegsman/99082f66a726bdff7776
 
-#define DENSITY     80
+#define SOFT_TWINKLES_DENSITY     80
 
 // For this animation to work, the Red component of this
 // color MUST be nonzero, AND must be an EVEN number.
@@ -67,7 +67,7 @@ uint16_t softTwinkles() {
     // Randomly choose a pixel, and if it's black, 'bump' it up a little.
     // Since it will now have an EVEN red component, it will start getting
     // brighter over time.
-    if (random8() < DENSITY) {
+    if (random8() < SOFT_TWINKLES_DENSITY) {
         int j = random16(NUM_LEDS);
         if (!leds[j]) leds[j] = lightcolor;
     }

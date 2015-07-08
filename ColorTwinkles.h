@@ -23,10 +23,10 @@
 //
 //  -Mark Kriegsman, December 2014
 
-#define STARTING_BRIGHTNESS 64
-#define FADE_IN_SPEED       32
-#define FADE_OUT_SPEED      20
-#define DENSITY            255
+#define STARTING_BRIGHTNESS    64
+#define FADE_IN_SPEED          32
+#define FADE_OUT_SPEED         20
+#define COLOR_TWINKLES_DENSITY 255
 
 void chooseColorPalette()
 {
@@ -157,7 +157,7 @@ uint16_t colorTwinkles() {
     brightenOrDarkenEachPixel(FADE_IN_SPEED, FADE_OUT_SPEED);
 
     // Now consider adding a new random twinkle
-    if (random8() < DENSITY) {
+    if (random8() < COLOR_TWINKLES_DENSITY) {
         int pos = random16(NUM_LEDS);
         if (!leds[pos]) {
             leds[pos] = ColorFromPalette(gPalette, random8(), STARTING_BRIGHTNESS, NOBLEND);
